@@ -7,7 +7,7 @@
 
 
 // Функция, с помощью которой вводим каждый элемент массива
-void recording_elements(short int choice_2, float *a)
+void recording_elements(short int choice_2, float* a)
 {
 	for (int i = 0; i < choice_2; i++)
 	{
@@ -31,7 +31,6 @@ void recording_elements_random(short int choice_2, float* a, int s)
 	}
 }
 
-
 // Сортировка выбором
 void selection_sort(short int choice_2, float* a)
 {
@@ -54,7 +53,7 @@ void quick_sort(int left, int right, float* a)
 	int l = left, r = right;
 	// Принимаем за ведущий элемент средний индекс
 	float pivot = a[(l + r) / 2];
-	
+
 	while (l <= r)
 	{
 		while (a[l] < pivot) l++;
@@ -241,6 +240,37 @@ void radix_sort_float(float* a, int choice_2, int s)
 	free(m2);
 }
 
+int correct_sort(float* a, int choice_2, int choice_2_1)
+{
+	float* a1 = (float*)malloc(choice_2 * sizeof(float));
+	float* a2 = (float*)malloc(choice_2 * sizeof(float));
+	float* a3 = (float*)malloc(choice_2 * sizeof(float));
+	float* a4 = (float*)malloc(choice_2 * sizeof(float));
+	for (int i = 0; i < choice_2; i++)
+	{
+		a1[i] = a[i];
+		a2[i] = a[i];
+		a3[i] = a[i];
+		a4[i] = a[i];
+	}
+	selection_sort(choice_2, a1);
+	merge_sort(a2, 0, choice_2 - 1);
+	quick_sort(0, choice_2 - 1, a3);
+	radix_sort_float(a4, choice_2, choice_2_1);
+	int fl = 0;
+	for (int i = 0; i < choice_2; i++)
+	{
+		if (a1[i] == a2[i] && a2[i] == a3[i] && a3[i] == a4[i]) continue;
+		else fl++;
+	}
+	free(a1);
+	free(a2);
+	free(a3);
+	free(a4);
+	if (!fl) return 1;
+	else return 0;
+}
+
 
 int main()
 {
@@ -250,7 +280,7 @@ int main()
 	printf("Привествую, это программа, с помощью которой Вы можете как отсортировать свой или рандомный массив, \nтак и сравнить время различных сортировок.\n");
 
 	short int choice_1 = 0;  // Переменная для выбора 1 режима
-	
+
 	// Используем do-while, чтобы избавиться от ошибки ввода пользователем, т.е пока пользователь не введет 1 или 2, будем просить ввести правильное число
 	do {
 		printf("Для начала выберете, что будем сортировать:\n1. Свой массив.\n2. Рандомный массив.\n");
@@ -341,33 +371,44 @@ int main()
 		switch (choice_4)
 		{
 		case 1: // Сортировка выбором
+			if (correct_sort(a, choice_2, choice_2_1)) printf("Сравнили все сортировки, они равны -> массив отсортирован кооректно!\n");
 			selection_sort(choice_2, a_sort1);
-			quick_sort(0, choice_2 - 1, a_sort2);
-			radix_sort_float(a_sort3, choice_2, choice_2_1);
-			merge_sort(a_sort4, 0, choice_2 - 1);
-			for (int i = 0; i < choice_2; i++)
-			{
-				if (a_sort1[i] == a_sort2[i] && a_sort2[i] == a_sort3[i] && a_sort3[i] == a_sort4[i]) continue;
-				else o++;
-			}
-			if (!o) printf("Сравнили все сортировки, они равны -> массив отсортирован кооректно!\n");
 			printf("Отсортированный массив: ");
 			for (int i = 0; i < choice_2; i++)
 			{
 				printf("%f", a_sort1[i]);
 				printf(" ");
 			}
-
 			break;
 		case 2: // Сортировка Хоара
-			quick_sort(0, choice_2 - 1, a_sort1);
+			if (correct_sort(a, choice_2, choice_2_1)) printf("Сравнили все сортировки, они равны -> массив отсортирован кооректно!\n");
+			quick_sort(0, choice_2 - 1, a_sort2);
+			printf("Отсортированный массив: ");
+			for (int i = 0; i < choice_2; i++)
+			{
+				printf("%f", a_sort2[i]);
+				printf(" ");
+			}
 			break;
 		case 3: // Сортировка слиянием
-			merge_sort(a_sort1, 0, choice_2 - 1);
+			if (correct_sort(a, choice_2, choice_2_1)) printf("Сравнили все сортировки, они равны -> массив отсортирован кооректно!\n");
+			merge_sort(a_sort3, 0, choice_2 - 1);
+			printf("Отсортированный массив: ");
+			for (int i = 0; i < choice_2; i++)
+			{
+				printf("%f", a_sort3[i]);
+				printf(" ");
+			}
 			break;
 		case 4: // Поразрядная сортировка
-			// Нужно выбрать точность s (кол-во знаков после запятой)
-			radix_sort_float(a_sort1, choice_2, choice_2_1);
+			if (correct_sort(a, choice_2, choice_2_1)) printf("Сравнили все сортировки, они равны -> массив отсортирован кооректно!\n");
+			radix_sort_float(a_sort4, choice_2, choice_2_1);
+			printf("Отсортированный массив: ");
+			for (int i = 0; i < choice_2; i++)
+			{
+				printf("%f", a_sort4[i]);
+				printf(" ");
+			}
 			break;
 		}
 
@@ -385,26 +426,18 @@ int main()
 			} while (z < 1 || z > 4);
 			r[z]++;
 		}
-		selection_sort(choice_2, a_sort1);
-		quick_sort(0, choice_2 - 1, a_sort2);
-		radix_sort_float(a_sort3, choice_2, choice_2_1);
-		merge_sort(a_sort4, 0, choice_2 - 1);
-		for (int i = 0; i < choice_2; i++)
-		{
-			if (a_sort1[i] == a_sort2[i] && a_sort2[i] == a_sort3[i] && a_sort3[i] == a_sort4[i]) continue;
-			else o++;
-		}
-		int flag = 1;
-		if (!o) printf("Сравнили все сортировки, они равны -> массив отсортирован кооректно!\n");
+		if (correct_sort(a, choice_2, choice_2_1)) printf("Сравнили все сортировки, они равны -> массив отсортирован кооректно!\n");
+		radix_sort_float(a, choice_2, choice_2_1);
 		printf("Отсортированный массив: ");
 		for (int i = 0; i < choice_2; i++)
 		{
-			printf("%f", a_sort1[i]);
+			printf("%f", a[i]);
 			printf(" ");
 		}
 		printf("\n");
 		for (int i = 1; i < 5; i++)
 		{
+			// Объявляем старт и стоп
 			clock_t start, end;
 			double cpu_time_used;
 
@@ -417,28 +450,6 @@ int main()
 					selection_sort(choice_2, a_sort1);
 					end = clock();
 					cpu_time_used = ((double)(end - start)) / CLOCKS_PER_SEC;
-					if (flag)
-					{
-						selection_sort(choice_2, a_sort1);
-						quick_sort(0, choice_2 - 1, a_sort2);
-						radix_sort_float(a_sort3, choice_2, choice_2_1);
-						merge_sort(a_sort4, 0, choice_2 - 1);
-						for (int i = 0; i < choice_2; i++)
-						{
-							if (a_sort1[i] == a_sort2[i] && a_sort2[i] == a_sort3[i] && a_sort3[i] == a_sort4[i]) continue;
-							else o++;
-						}
-						int flag = 1;
-						if (!o) printf("Сравнили все сортировки, они равны -> массив отсортирован кооректно!\n");
-						printf("Отсортированный массив: ");
-						for (int i = 0; i < choice_2; i++)
-						{
-							printf("%f", a_sort1[i]);
-							printf(" ");
-						}
-						printf("\n");
-						flag--;
-					}
 					printf("Время выполнения сортировки - Выбором: ");
 					printf("%lf", cpu_time_used);
 					printf("\n");
@@ -448,28 +459,6 @@ int main()
 					quick_sort(0, choice_2 - 1, a_sort2);
 					end = clock();
 					cpu_time_used = ((double)(end - start)) / CLOCKS_PER_SEC;
-					if (flag)
-					{
-						selection_sort(choice_2, a_sort1);
-						quick_sort(0, choice_2 - 1, a_sort2);
-						radix_sort_float(a_sort3, choice_2, choice_2_1);
-						merge_sort(a_sort4, 0, choice_2 - 1);
-						for (int i = 0; i < choice_2; i++)
-						{
-							if (a_sort1[i] == a_sort2[i] && a_sort2[i] == a_sort3[i] && a_sort3[i] == a_sort4[i]) continue;
-							else o++;
-						}
-						int flag = 1;
-						if (!o) printf("Сравнили все сортировки, они равны -> массив отсортирован кооректно!\n");
-						printf("Отсортированный массив: ");
-						for (int i = 0; i < choice_2; i++)
-						{
-							printf("%f", a_sort2[i]);
-							printf(" ");
-						}
-						printf("\n");
-						flag--;
-					}
 					printf("Время выполнения сортировки - Хоара: ");
 					printf("%lf", cpu_time_used);
 					printf("\n");
@@ -479,28 +468,6 @@ int main()
 					radix_sort_float(a_sort3, choice_2, choice_2_1);
 					end = clock();
 					cpu_time_used = ((double)(end - start)) / CLOCKS_PER_SEC;
-					if (flag)
-					{
-						selection_sort(choice_2, a_sort1);
-						quick_sort(0, choice_2 - 1, a_sort2);
-						radix_sort_float(a_sort3, choice_2, choice_2_1);
-						merge_sort(a_sort4, 0, choice_2 - 1);
-						for (int i = 0; i < choice_2; i++)
-						{
-							if (a_sort1[i] == a_sort2[i] && a_sort2[i] == a_sort3[i] && a_sort3[i] == a_sort4[i]) continue;
-							else o++;
-						}
-						int flag = 1;
-						if (!o) printf("Сравнили все сортировки, они равны -> массив отсортирован кооректно!\n");
-						printf("Отсортированный массив: ");
-						for (int i = 0; i < choice_2; i++)
-						{
-							printf("%f", a_sort3[i]);
-							printf(" ");
-						}
-						printf("\n");
-						flag--;
-					}
 					printf("Время выполнения сортировки - Слиянием: ");
 					printf("%lf", cpu_time_used);
 					printf("\n");
@@ -510,28 +477,6 @@ int main()
 					merge_sort(a_sort4, 0, choice_2 - 1);
 					end = clock();
 					cpu_time_used = ((double)(end - start)) / CLOCKS_PER_SEC;
-					if (flag)
-					{
-						selection_sort(choice_2, a_sort1);
-						quick_sort(0, choice_2 - 1, a_sort2);
-						radix_sort_float(a_sort3, choice_2, choice_2_1);
-						merge_sort(a_sort4, 0, choice_2 - 1);
-						for (int i = 0; i < choice_2; i++)
-						{
-							if (a_sort1[i] == a_sort2[i] && a_sort2[i] == a_sort3[i] && a_sort3[i] == a_sort4[i]) continue;
-							else o++;
-						}
-						int flag = 1;
-						if (!o) printf("Сравнили все сортировки, они равны -> массив отсортирован кооректно!\n");
-						printf("Отсортированный массив: ");
-						for (int i = 0; i < choice_2; i++)
-						{
-							printf("%f", a_sort2[i]);
-							printf(" ");
-						}
-						printf("\n");
-						flag--;
-					}
 					printf("Время выполнения сортировки - Поразрядная: ");
 					printf("%lf", cpu_time_used);
 					printf("\n");
@@ -541,6 +486,7 @@ int main()
 		}
 		break;
 	}
+	// Освобождаем память
 	free(a_sort1);
 	free(a_sort2);
 	free(a_sort3);
