@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>
+#include <stdint.h>
 
 
 // Функция, с помощью которой вводим каждый элемент массива
@@ -17,22 +18,18 @@ void recording_elements(short int choice_2, float* a)
 }
 
 // Функция, с помощью которой заполняем массив рандомными элементами
-void recording_elements_random(short int choice_2, float* a, int s)
+void recording_elements_random(short int choice_2, float* a)
 {
 	srand((unsigned)time(NULL));
 
-	// Переменная, чтобы округлить число до нужного кол-ва знаков после запятой
-	float t = (float)pow(10, s);
-
 	for (int i = 0; i < choice_2; i++)
 	{
-		float dig = (float)rand() / RAND_MAX * 1000.0f;
-		a[i] = round(dig * t) / t; // Обрезаем до s знаков после запятой
+		a[i] = (float)rand() / RAND_MAX * 1000.0f;
 	}
 }
 
 // Сортировка выбором
-void selection_sort(short int choice_2, float* a)
+void selection_sort(short int choice_2, float* a, int* swap)
 {
 	for (int i = 0; i < choice_2 - 1; i++)
 	{
@@ -41,14 +38,18 @@ void selection_sort(short int choice_2, float* a)
 		{
 			if (a[j] < a[m_index]) m_index = j;
 		}
-		float times_p = a[i];
-		a[i] = a[m_index];
-		a[m_index] = times_p;
+		if (m_index != i)
+		{
+			float times_p = a[i];
+			a[i] = a[m_index];
+			a[m_index] = times_p;
+			(*swap)++;
+		}
 	}
 }
 
 // Сортировка Хоара
-void quick_sort(int left, int right, float* a)
+void quick_sort(int left, int right, float* a, int* swap)
 {
 	int l = left, r = right;
 	// Принимаем за ведущий элемент средний индекс
@@ -61,6 +62,7 @@ void quick_sort(int left, int right, float* a)
 
 		if (l <= r)
 		{
+			if (l != r) (*swap)++;
 			float tmp = a[l];
 			a[l] = a[r];
 			a[r] = tmp;
@@ -69,26 +71,26 @@ void quick_sort(int left, int right, float* a)
 		}
 	}
 
-	if (left < r) quick_sort(left, r, a);
-	if (right > l) quick_sort(l, right, a);
+	if (left < r) quick_sort(left, r, a, swap);
+	if (right > l) quick_sort(l, right, a, swap);
 }
 
-void merge_slice(float* a, int mid, int left, int right); // Прототип функции соеденения массивов для merge сортировки
+void merge_slice(float* a, int mid, int left, int right, int* swap); // Прототип функции соеденения массивов для merge сортировки
 
 // Сортировка слиянием
-void merge_sort(float* a, int left, int right)
+void merge_sort(float* a, int left, int right, int* swap)
 {
 	if (left < right)
 	{
 		int mid = left + (right - left) / 2;  // Ищем средний индекс массива. Способ, чтобы не было переполнения массива
-		merge_sort(a, left, mid);  // Сортируем левую часть 
-		merge_sort(a, mid + 1, right);
-		merge_slice(a, mid, left, right);
+		merge_sort(a, left, mid, swap);  // Сортируем левую часть 
+		merge_sort(a, mid + 1, right, swap);
+		merge_slice(a, mid, left, right, swap);
 	}
 }
 
 // Функция слияния двух массивов
-void merge_slice(float* a, int mid, int left, int right)
+void merge_slice(float* a, int mid, int left, int right, int* swap)
 {
 	// Зададим переменные, в которых будут длины левого и правого массива
 	int l1 = mid - left + 1;
@@ -125,6 +127,7 @@ void merge_slice(float* a, int mid, int left, int right)
 			k++;
 			j++;
 		}
+		(*swap)++;
 	}
 
 	// Если в каком-то из массивах остались значения, то запишем их в основной массив, так как все "спорные" элементы сравнились до
@@ -133,114 +136,87 @@ void merge_slice(float* a, int mid, int left, int right)
 		a[k] = m1[i];
 		k++;
 		i++;
+		(*swap)++;
 	}
 	while (j < l2)
 	{
 		a[k] = m2[j];
 		k++;
 		j++;
+		(*swap)++;
 	}
 
 	free(m1);
 	free(m2);
 }
 
-// Поразрядная сортировка для целых значений
-void radix_sort_int(int* a, int choice_2)
+// Поразрядная сортировка
+// Преобразование из float в ключ для буд. сортировки
+uint32_t float_key(float x)
 {
-	// Найдем максимальный элемент массива, чтобы понять, сколько нужно разрядов проверять
-	int max = a[0];
-	for (int i = 1; i < choice_2; i++)
-	{
-		if (a[i] > max) max = a[i];
-	}
-
-	// Цикл прохода по каждому разряду
-	for (int raz = 1; max / raz > 0; raz *= 10)
-	{
-		// Делаем 2 массива, в одном храним кол-во крайних цифр, во втором новый отсортированный после каждого шага массив
-		int m1[10] = { 0 }; // В этом массиве храним кол-во цифр на последних элементах
-		int* m2 = (int*)malloc(choice_2 * sizeof(int));  // Отсортированный после каждого шага массив
-
-		// Циклом изменяем общее кол-во последних цифр
-		for (int i = 0; i < choice_2; i++) m1[(a[i] / raz) % 10]++;
-
-		// Превратим кол-во цифр в позиции, с помощью префикса суммы
-		for (int i = 1; i < 10; i++) m1[i] += m1[i - 1];
-
-		// Сопоставляем последнюю цифру с кол-во цифр и ставим в нужное место
-		for (int i = choice_2 - 1; i >= 0; i--)
-		{
-			int last_dig = (a[i] / raz) % 10; // Последняя цифра 
-			int ind = m1[last_dig] - 1; // Максимально возможный индекс, куда можно записать число
-			m2[ind] = a[i];
-			m1[last_dig]--;
-		}
-
-		// Запишем в основной массив последний отсортированный массив (будем записывать пока не пройдем все разряды)
-		for (int i = 0; i < choice_2; i++) a[i] = m2[i];
-
-		free(m2);
-	}
+	uint32_t u; // Переменная для хранения битов float
+	memcpy(&u, &x, sizeof(float));  // Копируем биты из float в uint32_t
+	// Проверяем старший бит числа
+	if (u & 0x80000000) u = ~u;
+	else u ^= 0x80000000;  // Меняет бит знака 
+	return u;
 }
 
-
-//Поразрядная сортировка для значений с плавающей запятой, которая будет использовтаь radix_sort_int
-void radix_sort_float(float* a, int choice_2, int s)
+// Обратное преобразование 
+float key_float(uint32_t u)
 {
-	// В зависимости от кол-ва знаков после запятой, берем число равное 10^-кол-во знаков после запятой, чтобы в последствии преобразовать элементы в int
-	long long int k = (long long int)pow(10, s);
-
-	// Выделим память под два массива, в одном будут положительные числа, а во втором отрицательные по модулю.
-	int* m1 = (int*)malloc(choice_2 * sizeof(int));
-	int* m2 = (int*)malloc(choice_2 * sizeof(int));
-
-	// Создадим переменные-указатели на динамические массивы
-	int f = 0, se = 0;
-
-	// Разделим все float числа основного массива по 2 новым
-	for (int i = 0; i < choice_2; i++)
-	{
-		// Преобразуем в переменную х
-		long long int x = (long long int)round(a[i] * k);
-
-		// В зависимости от знака числа, определяем его массив и поведение
-		if (x >= 0)
-		{
-			m1[f] = x;
-			f++;
-		}
-		else
-		{
-			m2[se] = -x;
-			se++;
-		}
-	}
-
-	// Сортируем массивы с отриц и полож числами, условия нужно, чтобы не передавать пустой массив
-	if (f > 0) radix_sort_int(m1, f);
-	if (se > 0) radix_sort_int(m2, se);
-
-	// Собираем массив обратно
-	int id = 0;
-	// Сначала отрицательные и в обратном порядке
-	for (int i = se - 1; i >= 0; i--)
-	{
-		a[id] = -((float)m2[i] / k);
-		id++;
-	}
-
-	for (int i = 0; i < f; i++)
-	{
-		a[id] = (float)m1[i] / k;
-		id++;
-	}
-
-	free(m1);
-	free(m2);
+	if (u & 0x80000000) u ^= 0x80000000;
+	else u = ~u;
+	float x;
+	memcpy(&x, &u, sizeof(float));
+	return x;
 }
 
-int correct_sort(float* a, int choice_2, int choice_2_1)
+// Сортировка по байту
+void count_sort(uint32_t* a, uint32_t* tmp, int n, int byte, int* swap) // n - choice_2
+{
+	int count[256] = { 0 }; // Массив частот 
+
+	for (int i = 0; i < n; i++)
+	{
+		int b = (a[i] >> (byte * 8)) & 0xFF;  // Берем каждый байт 
+		count[b]++;
+	}
+
+	// Префикс суммы, чтобы узнать потенциальное место каждого числа
+	for (int i = 1; i < 256; i++) count[i] += count[i - 1];
+
+	// Заполняем текущие места в массиве
+	for (int i = n - 1; i >= 0; i--)
+	{
+		int b = (a[i] >> (byte * 8)) & 0xFF;
+		tmp[count[b] - 1] = a[i];
+		count[b] -= 1;
+		(*swap)++;
+	}
+
+	memcpy(a, tmp, n * sizeof(uint32_t));
+}
+
+// Основная сортировка
+void radix_sort_float(float* a, int n, int* swap)
+{
+	uint32_t* a_cop = (uint32_t*)malloc(n * sizeof(uint32_t));
+	uint32_t* tmp = (uint32_t*)malloc(n * sizeof(uint32_t));
+
+	// Преобразуем в битовые записи с помощью ранее написанной функции
+	for (int i = 0; i < n; i++) a_cop[i] = float_key(a[i]);
+	// Сортируем по байтам с помощью ранее написанной функции
+	for (int byte = 0; byte < 4; byte++) count_sort(a_cop, tmp, n, byte, swap);
+	// Преобразуем обратно все битовые записи в float
+	for (int i = 0; i < n; i++) a[i] = key_float(a_cop[i]);
+
+	// Освобождаем память
+	free(a_cop);
+	free(tmp);
+}
+
+int correct_sort(float* a, int choice_2, int* swap)
 {
 	float* a1 = (float*)malloc(choice_2 * sizeof(float));
 	float* a2 = (float*)malloc(choice_2 * sizeof(float));
@@ -253,10 +229,10 @@ int correct_sort(float* a, int choice_2, int choice_2_1)
 		a3[i] = a[i];
 		a4[i] = a[i];
 	}
-	selection_sort(choice_2, a1);
-	merge_sort(a2, 0, choice_2 - 1);
-	quick_sort(0, choice_2 - 1, a3);
-	radix_sort_float(a4, choice_2, choice_2_1);
+	selection_sort(choice_2, a1, &swap);
+	merge_sort(a2, 0, choice_2 - 1, &swap);
+	quick_sort(0, choice_2 - 1, a3, &swap);
+	radix_sort_float(a4, choice_2, &swap);
 	int fl = 0;
 	for (int i = 0; i < choice_2; i++)
 	{
@@ -284,12 +260,11 @@ int main()
 	// Используем do-while, чтобы избавиться от ошибки ввода пользователем, т.е пока пользователь не введет 1 или 2, будем просить ввести правильное число
 	do {
 		printf("Для начала выберете, что будем сортировать:\n1. Свой массив.\n2. Рандомный массив.\n");
+		printf("Введите число: ");
 		scanf_s("%hd", &choice_1);
 	} while (choice_1 < 1 || choice_1 > 2);
 
 	short int choice_2 = 0;  // Переменная для выбора 2 режима
-	short int choice_2_1 = 0;  // Переменная для выбора кол-ва знаков после запятой
-
 
 	// В зависимости от выбора пользователя даем ему разный выбор
 	switch (choice_1)
@@ -298,19 +273,20 @@ int main()
 		printf("Супер! Вы выбрали сортировать свой массив, введите кол-во элементов массива: ");
 		scanf_s("%hd", &choice_2);
 		printf("\n");
-		printf("А теперь введите кол-во знаков после запятой в элементах вашего массива: ");
-		scanf_s("%hd", &choice_2_1);
-		printf("\n");
 		break;
 	case 2:
 		printf("Супер! Вы выбрали сортировать рандомный массив, введите кол-во элементов массива: ");
 		scanf_s("%hd", &choice_2);
 		printf("\n");
-		printf("А теперь введите кол-во знаков после запятой в элементах вашего массива: ");
-		scanf_s("%hd", &choice_2_1);
-		printf("\n");
 		break;
 	}
+
+	// Переменные для подсчета кол-ва перестановок в сортировках
+	int swaps_selection = 0;
+	int swaps_quick = 0;
+	int swaps_merge = 0;
+	int swaps_radix = 0;
+	int swap1 = 0; // Для функции, которая проверяет 4 массива на правильность сортировки
 
 	// Динамически выделяем память под массив 
 	float* a = (float*)malloc(choice_2 * sizeof(float));
@@ -323,7 +299,12 @@ int main()
 		break;
 	case 2:
 		printf("Ваш готовый 'рандомный' массив: ");
-		recording_elements_random(choice_2, a, choice_2_1);
+		recording_elements_random(choice_2, a);
+		for (int i = 0; i < choice_2; i++)
+		{
+			printf("%f", a[i]);
+			printf(" ");
+		}
 		break;
 	}
 
@@ -332,6 +313,7 @@ int main()
 	// Используем do-while, чтобы избавиться от ошибки ввода пользователем, т.е пока пользователь не введет 1 или 2, будем просить ввести правильное число
 	do {
 		printf("Выберете, что будем делать с массивом:\n1. Просто сортируем массив.\n2. Сортируем массив разными сортировками и сравниваем время сортировки.\n(введите сортировки(у) позже).\n");
+		printf("Введите число: ");
 		scanf_s("%hd", &choice_3);
 		printf("\n");
 	} while (choice_3 < 1 || choice_3 > 2);
@@ -356,7 +338,10 @@ int main()
 	float* a_sort4 = (float*)malloc(choice_2 * sizeof(float));
 	for (int i = 0; i < choice_2; i++)
 		a_sort4[i] = a[i];
-	int o = 0; // Переменная с помощью которой проверяем кол-во отклонившихся от нормы элементов
+
+	float* a_sort5 = (float*)malloc(choice_2 * sizeof(float));
+	for (int i = 0; i < choice_2; i++)
+		a_sort5[i] = a[i];
 
 	// Выбираем между режимами
 	switch (choice_3)
@@ -364,6 +349,7 @@ int main()
 	case 1:
 		do {
 			printf("Выберете какой сортировкой сортировать массив:\n1. Выбором.\n2. Хоара.\n3. Слиянием.\n4. Поразрядная.\n");
+			printf("Введите число: ");
 			scanf_s("%hd", &choice_4);
 		} while (choice_4 < 1 || choice_4 > 4);
 
@@ -371,44 +357,56 @@ int main()
 		switch (choice_4)
 		{
 		case 1: // Сортировка выбором
-			if (correct_sort(a, choice_2, choice_2_1)) printf("Сравнили все сортировки, они равны -> массив отсортирован кооректно!\n");
-			selection_sort(choice_2, a_sort1);
+			if (correct_sort(a, choice_2, &swap1)) printf("Сравнили все сортировки, они равны -> массив отсортирован кооректно!\n");
+			selection_sort(choice_2, a_sort1, &swaps_selection);
 			printf("Отсортированный массив: ");
 			for (int i = 0; i < choice_2; i++)
 			{
 				printf("%f", a_sort1[i]);
 				printf(" ");
 			}
+			printf("\n");
+			printf("Кол-во перестановок: ");
+			printf("%d", swap1);
 			break;
 		case 2: // Сортировка Хоара
-			if (correct_sort(a, choice_2, choice_2_1)) printf("Сравнили все сортировки, они равны -> массив отсортирован кооректно!\n");
-			quick_sort(0, choice_2 - 1, a_sort2);
+			if (correct_sort(a, choice_2, &swap1)) printf("Сравнили все сортировки, они равны -> массив отсортирован кооректно!\n");
+			quick_sort(0, choice_2 - 1, a_sort2, &swaps_quick);
 			printf("Отсортированный массив: ");
 			for (int i = 0; i < choice_2; i++)
 			{
 				printf("%f", a_sort2[i]);
 				printf(" ");
 			}
+			printf("\n");
+			printf("Кол-во перестановок: ");
+			printf("%d", swap1);
 			break;
 		case 3: // Сортировка слиянием
-			if (correct_sort(a, choice_2, choice_2_1)) printf("Сравнили все сортировки, они равны -> массив отсортирован кооректно!\n");
-			merge_sort(a_sort3, 0, choice_2 - 1);
+			if (correct_sort(a, choice_2, &swap1)) printf("Сравнили все сортировки, они равны -> массив отсортирован кооректно!\n");
+			merge_sort(a_sort3, 0, choice_2 - 1, &swaps_merge);
 			printf("Отсортированный массив: ");
 			for (int i = 0; i < choice_2; i++)
 			{
 				printf("%f", a_sort3[i]);
 				printf(" ");
 			}
+			printf("\n");
+			printf("Кол-во перестановок: ");
+			printf("%d", swap1);
 			break;
 		case 4: // Поразрядная сортировка
-			if (correct_sort(a, choice_2, choice_2_1)) printf("Сравнили все сортировки, они равны -> массив отсортирован кооректно!\n");
-			radix_sort_float(a_sort4, choice_2, choice_2_1);
+			if (correct_sort(a, choice_2, &swap1)) printf("Сравнили все сортировки, они равны -> массив отсортирован кооректно!\n");
+			radix_sort_float(a_sort4, choice_2, &swaps_radix);
 			printf("Отсортированный массив: ");
 			for (int i = 0; i < choice_2; i++)
 			{
 				printf("%f", a_sort4[i]);
 				printf(" ");
 			}
+			printf("\n");
+			printf("Кол-во перестановок: ");
+			printf("%d", swap1);
 			break;
 		}
 
@@ -418,7 +416,7 @@ int main()
 			printf("Выберете кол-во различных сортировок: ");
 			scanf_s("%hd", &choice_4);
 		} while (choice_4 < 1 || choice_4 > 4);
-		printf("Введите через Enter номера сортировок, время которых хотите узнать:\n1. Выбором.\n2. Хоара.\n3. Слиянием.\n4. Поразрядная.\n ");
+		printf("Введите через Enter номера сортировок, время которых хотите узнать:\n1. Выбором.\n2. Хоара.\n3. Слиянием.\n4. Поразрядная.\n");
 		for (int i = 0; i < choice_4; i++)
 		{
 			do {
@@ -426,12 +424,12 @@ int main()
 			} while (z < 1 || z > 4);
 			r[z]++;
 		}
-		if (correct_sort(a, choice_2, choice_2_1)) printf("Сравнили все сортировки, они равны -> массив отсортирован кооректно!\n");
-		radix_sort_float(a, choice_2, choice_2_1);
+		if (correct_sort(a, choice_2, &swap1)) printf("Сравнили все сортировки, они равны -> массив отсортирован кооректно!\n");
+		radix_sort_float(a_sort5, choice_2, &swaps_radix);
 		printf("Отсортированный массив: ");
 		for (int i = 0; i < choice_2; i++)
 		{
-			printf("%f", a[i]);
+			printf("%f", a_sort5[i]);
 			printf(" ");
 		}
 		printf("\n");
@@ -447,38 +445,50 @@ int main()
 				{
 				case 1:
 					start = clock();
-					selection_sort(choice_2, a_sort1);
+					selection_sort(choice_2, a_sort1, &swaps_selection);
 					end = clock();
 					cpu_time_used = ((double)(end - start)) / CLOCKS_PER_SEC;
 					printf("Время выполнения сортировки - Выбором: ");
 					printf("%lf", cpu_time_used);
 					printf("\n");
+					printf("Кол-во перестановок: ");
+					printf("%d", swaps_selection);
+					printf("\n");
 					break;
 				case 2:
 					start = clock();
-					quick_sort(0, choice_2 - 1, a_sort2);
+					quick_sort(0, choice_2 - 1, a_sort2, &swaps_quick);
 					end = clock();
 					cpu_time_used = ((double)(end - start)) / CLOCKS_PER_SEC;
 					printf("Время выполнения сортировки - Хоара: ");
 					printf("%lf", cpu_time_used);
 					printf("\n");
+					printf("Кол-во перестановок: ");
+					printf("%d", swaps_quick);
+					printf("\n");
 					break;
 				case 3:
 					start = clock();
-					radix_sort_float(a_sort3, choice_2, choice_2_1);
+					merge_sort(a_sort3, 0, choice_2 - 1, &swaps_merge);
 					end = clock();
 					cpu_time_used = ((double)(end - start)) / CLOCKS_PER_SEC;
 					printf("Время выполнения сортировки - Слиянием: ");
 					printf("%lf", cpu_time_used);
 					printf("\n");
+					printf("Кол-во перестановок: ");
+					printf("%d", swaps_merge);
+					printf("\n");
 					break;
 				case 4:
 					start = clock();
-					merge_sort(a_sort4, 0, choice_2 - 1);
+					radix_sort_float(a_sort4, choice_2, &swaps_radix);
 					end = clock();
 					cpu_time_used = ((double)(end - start)) / CLOCKS_PER_SEC;
 					printf("Время выполнения сортировки - Поразрядная: ");
 					printf("%lf", cpu_time_used);
+					printf("\n");
+					printf("Кол-во перестановок: ");
+					printf("%d", swaps_radix);
 					printf("\n");
 					break;
 				}
@@ -491,6 +501,7 @@ int main()
 	free(a_sort2);
 	free(a_sort3);
 	free(a_sort4);
+	free(a_sort5);
 	free(a);
 	return 0;
 }
