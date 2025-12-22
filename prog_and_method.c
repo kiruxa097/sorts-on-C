@@ -8,7 +8,7 @@
 
 
 // Функция, с помощью которой вводим каждый элемент массива
-void recording_elements(short int choice_2, float* a)
+void recording_elements(int choice_2, float* a)
 {
 	for (int i = 0; i < choice_2; i++)
 	{
@@ -18,7 +18,7 @@ void recording_elements(short int choice_2, float* a)
 }
 
 // Функция, с помощью которой заполняем массив рандомными элементами
-void recording_elements_random(short int choice_2, float* a)
+void recording_elements_random(int choice_2, float* a)
 {
 	srand((unsigned)time(NULL));
 
@@ -29,7 +29,7 @@ void recording_elements_random(short int choice_2, float* a)
 }
 
 // Сортировка выбором
-void selection_sort(short int choice_2, float* a, int* swap)
+void selection_sort(int choice_2, float* a, int* swap)
 {
 	for (int i = 0; i < choice_2 - 1; i++)
 	{
@@ -264,7 +264,7 @@ int main()
 		scanf_s("%hd", &choice_1);
 	} while (choice_1 < 1 || choice_1 > 2);
 
-	short int choice_2 = 0;  // Переменная для выбора 2 режима
+	int choice_2 = 0;  // Переменная для выбора 2 режима
 
 	// В зависимости от выбора пользователя даем ему разный выбор
 	switch (choice_1)
@@ -357,7 +357,7 @@ int main()
 		switch (choice_4)
 		{
 		case 1: // Сортировка выбором
-			if (correct_sort(a, choice_2, &swap1)) printf("Сравнили все сортировки, они равны -> массив отсортирован кооректно!\n");
+			if (correct_sort(a_sort1, choice_2, &swap1)) printf("Сравнили все сортировки, они равны -> массив отсортирован кооректно!\n");
 			selection_sort(choice_2, a_sort1, &swaps_selection);
 			printf("Отсортированный массив: ");
 			for (int i = 0; i < choice_2; i++)
@@ -370,7 +370,7 @@ int main()
 			printf("%d", swap1);
 			break;
 		case 2: // Сортировка Хоара
-			if (correct_sort(a, choice_2, &swap1)) printf("Сравнили все сортировки, они равны -> массив отсортирован кооректно!\n");
+			if (correct_sort(a_sort1, choice_2, &swap1)) printf("Сравнили все сортировки, они равны -> массив отсортирован кооректно!\n");
 			quick_sort(0, choice_2 - 1, a_sort2, &swaps_quick);
 			printf("Отсортированный массив: ");
 			for (int i = 0; i < choice_2; i++)
@@ -383,7 +383,7 @@ int main()
 			printf("%d", swap1);
 			break;
 		case 3: // Сортировка слиянием
-			if (correct_sort(a, choice_2, &swap1)) printf("Сравнили все сортировки, они равны -> массив отсортирован кооректно!\n");
+			if (correct_sort(a_sort1, choice_2, &swap1)) printf("Сравнили все сортировки, они равны -> массив отсортирован кооректно!\n");
 			merge_sort(a_sort3, 0, choice_2 - 1, &swaps_merge);
 			printf("Отсортированный массив: ");
 			for (int i = 0; i < choice_2; i++)
@@ -396,7 +396,7 @@ int main()
 			printf("%d", swap1);
 			break;
 		case 4: // Поразрядная сортировка
-			if (correct_sort(a, choice_2, &swap1)) printf("Сравнили все сортировки, они равны -> массив отсортирован кооректно!\n");
+			if (correct_sort(a_sort1, choice_2, &swap1)) printf("Сравнили все сортировки, они равны -> массив отсортирован кооректно!\n");
 			radix_sort_float(a_sort4, choice_2, &swaps_radix);
 			printf("Отсортированный массив: ");
 			for (int i = 0; i < choice_2; i++)
@@ -426,7 +426,7 @@ int main()
 			} while (z < 1 || z > 4);
 			r[z]++;
 		}
-		if (correct_sort(a, choice_2, &swap1)) printf("Сравнили все сортировки, они равны -> массив отсортирован кооректно!\n");
+		if (correct_sort(a_sort1, choice_2, &swap1)) printf("Сравнили все сортировки, они равны -> массив отсортирован кооректно!\n");
 		radix_sort_float(a_sort5, choice_2, &swaps_radix);
 		printf("Отсортированный массив: ");
 		for (int i = 0; i < choice_2; i++)
@@ -446,6 +446,7 @@ int main()
 				switch (i)
 				{
 				case 1:
+					memcpy(a_sort1, a, choice_2 * sizeof(float));
 					start = clock();
 					selection_sort(choice_2, a_sort1, &swaps_selection);
 					end = clock();
@@ -458,6 +459,7 @@ int main()
 					printf("\n");
 					break;
 				case 2:
+					memcpy(a_sort2, a, choice_2 * sizeof(float));
 					start = clock();
 					quick_sort(0, choice_2 - 1, a_sort2, &swaps_quick);
 					end = clock();
@@ -470,6 +472,7 @@ int main()
 					printf("\n");
 					break;
 				case 3:
+					memcpy(a_sort3, a, choice_2 * sizeof(float));
 					start = clock();
 					merge_sort(a_sort3, 0, choice_2 - 1, &swaps_merge);
 					end = clock();
@@ -482,6 +485,7 @@ int main()
 					printf("\n");
 					break;
 				case 4:
+					memcpy(a_sort4, a, choice_2 * sizeof(float));
 					start = clock();
 					radix_sort_float(a_sort4, choice_2, &swaps_radix);
 					end = clock();
