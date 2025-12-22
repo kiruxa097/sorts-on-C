@@ -53,7 +53,7 @@ void quick_sort(int left, int right, float* a, int* swap)
 {
 	int l = left, r = right;
 	// Принимаем за ведущий элемент средний индекс
-	float pivot = median(a[left], a[(left + right) / 2], a[right]);
+	float pivot = a[left + (right - left) / 2];
 
 	while (l <= r)
 	{
