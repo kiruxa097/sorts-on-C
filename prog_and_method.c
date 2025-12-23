@@ -222,17 +222,14 @@ int correct_sort(float* a, int choice_2, int* swap)
 	float* a2 = (float*)malloc(choice_2 * sizeof(float));
 	float* a3 = (float*)malloc(choice_2 * sizeof(float));
 	float* a4 = (float*)malloc(choice_2 * sizeof(float));
-	for (int i = 0; i < choice_2; i++)
-	{
-		a1[i] = a[i];
-		a2[i] = a[i];
-		a3[i] = a[i];
-		a4[i] = a[i];
-	}
-	selection_sort(choice_2, a1, &swap);
-	merge_sort(a2, 0, choice_2 - 1, &swap);
-	quick_sort(0, choice_2 - 1, a3, &swap);
-	radix_sort_float(a4, choice_2, &swap);
+	memcpy(a1, a, choice_2 * sizeof(float));
+	memcpy(a2, a, choice_2 * sizeof(float));
+	memcpy(a3, a, choice_2 * sizeof(float));
+	memcpy(a4, a, choice_2 * sizeof(float));
+	selection_sort(choice_2, a1, swap);
+	merge_sort(a2, 0, choice_2 - 1, swap);
+	quick_sort(0, choice_2 - 1, a3, swap);
+	radix_sort_float(a4, choice_2, swap);
 	int fl = 0;
 	for (int i = 0; i < choice_2; i++)
 	{
@@ -322,26 +319,10 @@ int main()
 	int z = 0;
 	int r[5] = { 0 };
 
-	// Копии массивов, чтобы корректнее проверить качество сортировок 
-	float* a_sort1 = (float*)malloc(choice_2 * sizeof(float));
-	for (int i = 0; i < choice_2; i++)
-		a_sort1[i] = a[i];
+	// Копия массива, чтобы корректнее проверить качество сортировок 
+	float* a1 = (float*)malloc(choice_2 * sizeof(float));
+	memcpy(a1, a, choice_2 * sizeof(float));
 
-	float* a_sort2 = (float*)malloc(choice_2 * sizeof(float));
-	for (int i = 0; i < choice_2; i++)
-		a_sort2[i] = a[i];
-
-	float* a_sort3 = (float*)malloc(choice_2 * sizeof(float));
-	for (int i = 0; i < choice_2; i++)
-		a_sort3[i] = a[i];
-
-	float* a_sort4 = (float*)malloc(choice_2 * sizeof(float));
-	for (int i = 0; i < choice_2; i++)
-		a_sort4[i] = a[i];
-
-	float* a_sort5 = (float*)malloc(choice_2 * sizeof(float));
-	for (int i = 0; i < choice_2; i++)
-		a_sort5[i] = a[i];
 
 	// Выбираем между режимами
 	switch (choice_3)
@@ -357,12 +338,14 @@ int main()
 		switch (choice_4)
 		{
 		case 1: // Сортировка выбором
-			if (correct_sort(a_sort1, choice_2, &swap1)) printf("Сравнили все сортировки, они равны -> массив отсортирован кооректно!\n");
-			selection_sort(choice_2, a_sort1, &swaps_selection);
+			memcpy(a1, a, choice_2 * sizeof(float));
+			if (correct_sort(a1, choice_2, &swap1)) printf("Сравнили все сортировки, они равны -> массив отсортирован кооректно!\n");
+			memcpy(a1, a, choice_2 * sizeof(float));
+			selection_sort(choice_2, a1, &swaps_selection);
 			printf("Отсортированный массив: ");
 			for (int i = 0; i < choice_2; i++)
 			{
-				printf("%f", a_sort1[i]);
+				printf("%f", a1[i]);
 				printf(" ");
 			}
 			printf("\n");
@@ -370,12 +353,14 @@ int main()
 			printf("%d", swap1);
 			break;
 		case 2: // Сортировка Хоара
-			if (correct_sort(a_sort1, choice_2, &swap1)) printf("Сравнили все сортировки, они равны -> массив отсортирован кооректно!\n");
-			quick_sort(0, choice_2 - 1, a_sort2, &swaps_quick);
+			memcpy(a1, a, choice_2 * sizeof(float));
+			if (correct_sort(a1, choice_2, &swap1)) printf("Сравнили все сортировки, они равны -> массив отсортирован кооректно!\n");
+			memcpy(a1, a, choice_2 * sizeof(float));
+			quick_sort(0, choice_2 - 1, a1, &swaps_quick);
 			printf("Отсортированный массив: ");
 			for (int i = 0; i < choice_2; i++)
 			{
-				printf("%f", a_sort2[i]);
+				printf("%f", a1[i]);
 				printf(" ");
 			}
 			printf("\n");
@@ -383,12 +368,13 @@ int main()
 			printf("%d", swap1);
 			break;
 		case 3: // Сортировка слиянием
-			if (correct_sort(a_sort1, choice_2, &swap1)) printf("Сравнили все сортировки, они равны -> массив отсортирован кооректно!\n");
-			merge_sort(a_sort3, 0, choice_2 - 1, &swaps_merge);
+			memcpy(a1, a, choice_2 * sizeof(float));
+			if (correct_sort(a1, choice_2, &swap1)) printf("Сравнили все сортировки, они равны -> массив отсортирован кооректно!\n");
+			merge_sort(a1, 0, choice_2 - 1, &swaps_merge);
 			printf("Отсортированный массив: ");
 			for (int i = 0; i < choice_2; i++)
 			{
-				printf("%f", a_sort3[i]);
+				printf("%f", a1[i]);
 				printf(" ");
 			}
 			printf("\n");
@@ -396,12 +382,13 @@ int main()
 			printf("%d", swap1);
 			break;
 		case 4: // Поразрядная сортировка
-			if (correct_sort(a_sort1, choice_2, &swap1)) printf("Сравнили все сортировки, они равны -> массив отсортирован кооректно!\n");
-			radix_sort_float(a_sort4, choice_2, &swaps_radix);
+			memcpy(a1, a, choice_2 * sizeof(float));
+			if (correct_sort(a1, choice_2, &swap1)) printf("Сравнили все сортировки, они равны -> массив отсортирован кооректно!\n");
+			radix_sort_float(a1, choice_2, &swaps_radix);
 			printf("Отсортированный массив: ");
 			for (int i = 0; i < choice_2; i++)
 			{
-				printf("%f", a_sort4[i]);
+				printf("%f", a1[i]);
 				printf(" ");
 			}
 			printf("\n");
@@ -426,12 +413,14 @@ int main()
 			} while (z < 1 || z > 4);
 			r[z]++;
 		}
-		if (correct_sort(a_sort1, choice_2, &swap1)) printf("Сравнили все сортировки, они равны -> массив отсортирован кооректно!\n");
-		radix_sort_float(a_sort5, choice_2, &swaps_radix);
+		memcpy(a1, a, choice_2 * sizeof(float));
+		if (correct_sort(a1, choice_2, &swap1)) printf("Сравнили все сортировки, они равны -> массив отсортирован кооректно!\n");
+		memcpy(a1, a, choice_2 * sizeof(float));
+		radix_sort_float(a1, choice_2, &swaps_radix);
 		printf("Отсортированный массив: ");
 		for (int i = 0; i < choice_2; i++)
 		{
-			printf("%f", a_sort5[i]);
+			printf("%f", a1[i]);
 			printf(" ");
 		}
 		printf("\n");
@@ -446,9 +435,10 @@ int main()
 				switch (i)
 				{
 				case 1:
-					memcpy(a_sort1, a, choice_2 * sizeof(float));
+					memcpy(a1, a, choice_2 * sizeof(float));
+					swaps_selection = 0;
 					start = clock();
-					selection_sort(choice_2, a_sort1, &swaps_selection);
+					selection_sort(choice_2, a1, &swaps_selection);
 					end = clock();
 					cpu_time_used = ((double)(end - start)) / CLOCKS_PER_SEC;
 					printf("Время выполнения сортировки - Выбором: ");
@@ -459,9 +449,10 @@ int main()
 					printf("\n");
 					break;
 				case 2:
-					memcpy(a_sort2, a, choice_2 * sizeof(float));
+					memcpy(a1, a, choice_2 * sizeof(float));
+					swaps_quick = 0;
 					start = clock();
-					quick_sort(0, choice_2 - 1, a_sort2, &swaps_quick);
+					quick_sort(0, choice_2 - 1, a1, &swaps_quick);
 					end = clock();
 					cpu_time_used = ((double)(end - start)) / CLOCKS_PER_SEC;
 					printf("Время выполнения сортировки - Хоара: ");
@@ -472,9 +463,10 @@ int main()
 					printf("\n");
 					break;
 				case 3:
-					memcpy(a_sort3, a, choice_2 * sizeof(float));
+					memcpy(a1, a, choice_2 * sizeof(float));
+					swaps_merge = 0;
 					start = clock();
-					merge_sort(a_sort3, 0, choice_2 - 1, &swaps_merge);
+					merge_sort(a1, 0, choice_2 - 1, &swaps_merge);
 					end = clock();
 					cpu_time_used = ((double)(end - start)) / CLOCKS_PER_SEC;
 					printf("Время выполнения сортировки - Слиянием: ");
@@ -485,9 +477,10 @@ int main()
 					printf("\n");
 					break;
 				case 4:
-					memcpy(a_sort4, a, choice_2 * sizeof(float));
+					memcpy(a1, a, choice_2 * sizeof(float));
+					swaps_radix = 0;
 					start = clock();
-					radix_sort_float(a_sort4, choice_2, &swaps_radix);
+					radix_sort_float(a1, choice_2, &swaps_radix);
 					end = clock();
 					cpu_time_used = ((double)(end - start)) / CLOCKS_PER_SEC;
 					printf("Время выполнения сортировки - Поразрядная: ");
@@ -503,11 +496,7 @@ int main()
 		break;
 	}
 	// Освобождаем память
-	free(a_sort1);
-	free(a_sort2);
-	free(a_sort3);
-	free(a_sort4);
-	free(a_sort5);
+	free(a1);
 	free(a);
 	return 0;
 }
